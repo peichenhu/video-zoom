@@ -1,0 +1,39 @@
+.popup-app * {
+    box-sizing: border-box;
+}
+.popup-app .setting {
+    line-height: 30px;
+    font-size: 12px;
+    width: 300px;
+    background: #efefef;
+    display: flex;
+    flex-flow: row nowrap;
+    padding: 4px 16px;
+    margin-bottom: 6px;
+}
+.popup-app .setting .label {
+    min-width: 60px;
+    line-height: 30px;
+}
+.popup-app .setting textarea,
+.popup-app .setting input,
+.popup-app .setting select {
+    margin: 0;
+    padding: 0;
+    width: 130px;
+    min-width: 130px;
+    display: inline-block;
+    padding: 2px 0px;
+    word-break: break-all;
+}
+.popup-app .setting textarea {
+    padding: 4px;
+}
+.popup-app .setting .item {
+    display: inline-flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+}
+.popup-app .setting .value {
+    padding: 0 12px;
+}
