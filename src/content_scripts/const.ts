@@ -12,38 +12,51 @@ export const POSITION = {
 };
 
 export const SETTING = {
-    storeKey: 'KS_VIDEO_ZOOM',
-    zoomEnable: 1,
+    uuid: 'KS_VIDEO_ZOOM',
+    zIndex: 9999,
+    zoomEnable: true,
     zoomRate: 2,
-    zoomSize: 200,
-    autoSize: 1,
-    autoPosition: 1,
+    zoomSize: 250,
+    autoSize: true,
+    autoPosition: true,
+    focusCenter: false,
+    supportFullscreen: true,
     zoomPosition: 'right_top',
-    disabledPath: '',
+    disabledHostList: [
+        {
+            edit: false,
+            name: 'KAP ADX 审核',
+            path: '/audit/auditReview?bizId=400000802&queueId=600001789;',
+        },
+        {
+            edit: false,
+            name: '元素 5.0 审核',
+            path: '/frontend/commercial/index.html#/commercial/superFrame/audit5/auditReview;',
+        },
+    ],
 };
 
 export const DASHBOARD = {
-    // 开发模式
+    // 用户配置
+    ...JSON.parse(JSON.stringify(SETTING)),
+    // 衍生配置
+    elWorkspaceId: `${SETTING.uuid}_WORKSPACE`,
+    elHotZoneId: `${SETTING.uuid}_HOT_ZONE`,
+    elShadowBoxId: `${SETTING.uuid}_SHADOW_BOX`,
+    elShadowVideoId: `${SETTING.uuid}_SHADOW_VIDEO`,
+    // 基础配置
     isDev: false,
+    isFullscreen: false,
+    minSize: 200,
+    maxSize: 500,
     // 元素索引
     el: null,
-    elWorkSpace: null,
+    elWorkspace: null,
     elHotZone: null,
     elShadowVideo: null,
     elShadowVideoBox: null,
     elActiveVideo: null,
     elActiveVideoSrc: null,
-    // 用户配置
-    zoomEnable: true,
-    zoomRate: 1, // 放大倍率
-    autoSize: true,
-    zoomSize: 300,
-    minSize: 200,
-    maxSize: 500,
-    focusCenter: false, // 聚焦中心点
-    disabledPath: '',
-    zoomPosition: POSITION.right_top, // [位置-对齐]
-    autoPosition: true,
     // 衍生影像配置
     shadowVideoWidth: 0 * 2,
     shadowVideoHeight: 0 * 2,

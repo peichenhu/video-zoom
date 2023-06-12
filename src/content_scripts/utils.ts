@@ -105,12 +105,7 @@ export function updateDashboard(dashboard: any): void {
  * @param mediaHeight 视频高度
  * @returns dx, dy, dw, dh
  */
-export function computedDrawPosition(
-    canvasWidth: number,
-    canvasHeight: number,
-    mediaWidth: number,
-    mediaHeight: number
-) {
+export function computedDrawPosition(canvasWidth: number, canvasHeight: number, mediaWidth: number, mediaHeight: number) {
     const canvasRatio = canvasWidth / canvasHeight;
     const mediaRatio = mediaWidth / mediaHeight;
     if (canvasRatio > mediaRatio) {
@@ -134,25 +129,23 @@ export function computedDrawPosition(
  * @param elVideo 存在就在视频元素节点平级创建工作空间
  */
 export function createWorkspace(dashboard: Record<string, any>, elVideo?: HTMLVideoElement) {
-    const elWorkSpaceID = 'KS_VIDEO_ZOOM_WORKSPACE';
-    const elHotZoneID = 'KS_VIDEO_ZOOM_HOT_ZONE';
-    const elShadowBoxID = 'KS_VIDEO_ZOOM_SHADOW_BOX';
-    const elShadowVideoID = 'KS_VIDEO_ZOOM_SHADOW_VIDEO';
-    const elWorkSpace = document.getElementById(elWorkSpaceID);
-    // if (!elWorkSpace && dashboard.elActiveVideo) {
-    if (!elWorkSpace) {
-        // const video: HTMLVideoElement = dashboard.elActiveVideo;
-        const elWorkSpace = document.createElement('div');
+    const elWorkspace = document.getElementById(dashboard.elWorkspaceId);
+    if (!elWorkspace) {
+        const elWorkspace = document.createElement('div');
         const elHotZone = document.createElement('div');
         const elShadowBox = document.createElement('div');
         const elShadowVideo = document.createElement('canvas');
-        elWorkSpace.id = elWorkSpaceID;
-        elHotZone.id = elHotZoneID;
-        elShadowBox.id = elShadowBoxID;
-        elShadowVideo.id = elShadowVideoID;
-        elWorkSpace.appendChild(elHotZone);
-        elWorkSpace.appendChild(elShadowBox);
+        elWorkspace.id = dashboard.elWorkspaceId;
+        elHotZone.id = dashboard.elHotZoneId;
+        elShadowBox.id = dashboard.elShadowBoxId;
+        elShadowVideo.id = dashboard.elShadowVideoId;
+        elWorkspace.appendChild(elHotZone);
+        elWorkspace.appendChild(elShadowBox);
         elShadowBox.appendChild(elShadowVideo);
+        addStyle(elWorkspace, {
+            position: 'relative',
+            zIndex: dashboard.zIndex,
+        });
         addStyle(elHotZone, {
             position: 'fixed',
             top: '-1000px',
@@ -160,7 +153,7 @@ export function createWorkspace(dashboard: Record<string, any>, elVideo?: HTMLVi
             width: dashboard.hotZoneWidth + 'px',
             height: dashboard.hotZoneHeight + 'px',
             background: 'rgba(0, 0, 0, 0.2)',
-            zIndex: '999',
+            zIndex: dashboard.zIndex,
             pointerEvents: 'none',
             opacity: 0,
             boxSizing: 'border-box',
@@ -172,7 +165,7 @@ export function createWorkspace(dashboard: Record<string, any>, elVideo?: HTMLVi
             width: dashboard.shadowVideoBoxHeight + 'px',
             height: dashboard.shadowVideoBoxHeight + 'px',
             background: 'rgba(0, 0, 255, 0.2)',
-            zIndex: '999',
+            zIndex: dashboard.zIndex,
             pointerEvents: 'none',
             opacity: 0,
             overflow: 'hidden',
@@ -193,14 +186,14 @@ export function createWorkspace(dashboard: Record<string, any>, elVideo?: HTMLVi
             background: 'black',
             boxSizing: 'border-box',
         });
-        dashboard.elWorkSpace = elWorkSpace;
+        dashboard.elWorkspace = elWorkspace;
         dashboard.elHotZone = elHotZone;
         dashboard.elShadowVideoBox = elShadowBox;
         dashboard.elShadowVideo = elShadowVideo;
         if (elVideo && elVideo.parentNode) {
-            elVideo.parentNode.appendChild(elWorkSpace);
+            elVideo.parentNode.appendChild(elWorkspace);
         } else if (!elVideo) {
-            document.body.appendChild(elWorkSpace);
+            document.body.appendChild(elWorkspace);
         }
     }
 }
@@ -389,17 +382,26 @@ export async function storeSetting() {
  */
 export async function applyUserSetting(dashboard: typeof DASHBOARD) {
     const userSetting = await storeSetting();
-    const { autoSize = true, autoPosition = true, zoomEnable = true, focusCenter = false } = userSetting;
-    const SIZE = Number(userSetting.zoomSize) || 200;
-    const RATE = Number(userSetting.zoomRate) || 2;
-    dashboard.zoomEnable = Boolean(zoomEnable);
-    dashboard.autoSize = Boolean(autoSize);
-    dashboard.autoPosition = Boolean(autoPosition);
-    dashboard.focusCenter = Boolean(focusCenter);
-    dashboard.zoomRate = RATE;
-    dashboard.zoomSize = SIZE;
-    dashboard.disabledPath = userSetting.disabledPath || '';
-    dashboard.zoomPosition = userSetting.zoomPosition || POSITION.right_top;
+    if (dashboard.supportFullscreen !== userSetting.supportFullscreen) {
+        removeWorkspace(dashboard);
+    }
+    Object.assign(dashboard, {
+        ...userSetting,
+        elWorkspaceId: `${userSetting.uuid}_WORKSPACE`,
+        elHotZoneId: `${userSetting.uuid}_HOT_ZONE`,
+        elShadowBoxId: `${userSetting.uuid}_SHADOW_BOX`,
+        elShadowVideoId: `${userSetting.uuid}_SHADOW_VIDEO`,
+    });
+}
+/**
+ * 删除工作空间
+ */
+export function removeWorkspace(dashboard: typeof DASHBOARD) {
+    let el = document.getElementById(dashboard.elWorkspaceId);
+    if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+    }
+    el = null;
 }
 
 export default {

@@ -1,2 +1,3 @@
-# video-zoom
-视频帧图像放大镜，支持多种配置。
+# 视频帧浏览器插件
+
+> 基于 Vue3 + TypeScript + Vite + ElementPlus 开发构建谷歌浏览器插件

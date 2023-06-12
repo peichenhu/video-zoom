@@ -8,6 +8,7 @@ import {
     setShadowVideoOffset,
     setPerfectPosition,
     applyUserSetting,
+    // removeWorkspace,
 } from './utils';
 
 import { DASHBOARD } from './const';
@@ -18,30 +19,37 @@ export async function initZoom() {
     await applyUserSetting(dashboard);
     // 查找视频
     const videoList = document.querySelectorAll('video');
+    const addVideoListener = function (videoEl: HTMLVideoElement) {
+        videoEl.dataset.zoom = 'ks-cqc-fe-audit';
+        videoEl.addEventListener('mousemove', e => videoMove(e, dashboard));
+        videoEl.addEventListener('mouseenter', e => videoEnter(e, dashboard));
+        videoEl.addEventListener('mouseleave', e => videoLeave(e, dashboard));
+        videoEl.addEventListener('mouseout', e => videoLeave(e, dashboard));
+        videoEl.addEventListener('play', e => videoLeave(e, dashboard));
+        videoEl.addEventListener('playing', e => videoLeave(e, dashboard));
+        videoEl.addEventListener('rezise', e => videoLeave(e, dashboard));
+    };
     if (videoList && videoList.length) {
-        const addVideoListener = function (videoEl: HTMLVideoElement) {
-            videoEl.dataset.zoom = 'ks-cqc-fe-audit';
-            videoEl.addEventListener('mousemove', e => videoMove(e, dashboard));
-            videoEl.addEventListener('mouseenter', e => videoEnter(e, dashboard));
-            videoEl.addEventListener('mouseleave', e => videoLeave(e, dashboard));
-            videoEl.addEventListener('mouseout', e => videoLeave(e, dashboard));
-            videoEl.addEventListener('play', e => videoLeave(e, dashboard));
-            videoEl.addEventListener('playing', e => videoLeave(e, dashboard));
-            videoEl.addEventListener('rezise', e => videoLeave(e, dashboard));
-        };
+        // removeWorkspace(dashboard);
         createDashboard(dashboard);
         dashboard.videoCount = [...videoList].length;
         const noZoomVideoList = [...videoList].filter(el => el.dataset.zoom !== 'ks-cqc-fe-audit');
         noZoomVideoList.forEach(addVideoListener);
         window.addEventListener('scroll', e => videoLeave(e, dashboard));
         window.addEventListener('wheel', e => videoLeave(e, dashboard));
-        document.addEventListener('fullscreenchange', e => videoLeave(e, dashboard));
+        document.addEventListener('fullscreenchange', e => {
+            videoLeave(e, dashboard);
+            dashboard.isFullscreen = Boolean(document.fullscreenElement);
+        });
     }
 }
 
 export function videoMove(e: any, dashboard: any) {
     const { paused = true } = dashboard.elActiveVideo || {};
     if (!paused) {
+        return;
+    }
+    if (!dashboard.supportFullscreen && dashboard.isFullscreen) {
         return;
     }
     if (dashboard.activeVideo === false) {
@@ -59,6 +67,9 @@ export function videoMove(e: any, dashboard: any) {
 
 export async function videoEnter(e: any, dashboard: any) {
     await applyUserSetting(dashboard);
+    if (!dashboard.supportFullscreen && dashboard.isFullscreen) {
+        return;
+    }
     if (!dashboard.zoomEnable) {
         return;
     }
@@ -67,7 +78,12 @@ export async function videoEnter(e: any, dashboard: any) {
     if (!paused) {
         return;
     }
-    createWorkspace(dashboard, elVideo);
+    if (dashboard.supportFullscreen) {
+        createWorkspace(dashboard, elVideo);
+    } else {
+        createWorkspace(dashboard);
+    }
+
     const rect = elVideo.getBoundingClientRect();
     dashboard.elActiveVideo = elVideo;
     dashboard.activeVideoWidth = rect.width;
@@ -87,10 +103,10 @@ export async function videoEnter(e: any, dashboard: any) {
 }
 
 export function videoLeave(_e: any, dashboard: any) {
-    if (dashboard.elActiveVideo && dashboard.elWorkSpace) {
+    if (dashboard.elActiveVideo && dashboard.elWorkspace) {
         const video = dashboard.elActiveVideo as HTMLVideoElement;
-        if (video.parentNode && video.parentNode.contains(dashboard.elWorkSpace)) {
-            video.parentNode?.removeChild(dashboard.elWorkSpace);
+        if (video.parentNode && video.parentNode.contains(dashboard.elWorkspace)) {
+            video.parentNode?.removeChild(dashboard.elWorkspace);
         }
     }
     dashboard.elActiveVideo;
